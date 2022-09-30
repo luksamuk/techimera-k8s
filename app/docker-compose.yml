@@ -1,0 +1,33 @@
+version: "3"
+services:
+  
+  database:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - techimera-db:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  techimera:
+    build: .
+    environment:
+      - APP_HOST=0.0.0.0
+      - APP_PORT=9000
+      - PGSQL_HOST=database
+      - PGSQL_PORT=5432
+      - PGSQL_USER=postgres
+      - PGSQL_PASSWORD=postgres
+      - PGSQL_DATABASE=techimera
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    depends_on:
+      - database
+
+volumes:
+  techimera-db:
+

@@ -1,0 +1,58 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+
+(progn (ros:ensure-asdf)
+       (unless (find-package :techimera)
+         (ql:quickload :techimera :silent t)))
+
+(defpackage :ros.script.techimera
+  (:use :cl))
+
+(in-package :ros.script.techimera)
+
+(defconstant +SIGINT+ 2)
+(defparameter *running* t)
+
+(cffi:defcallback interrupt-handler :void ((signo :int))
+  (declare (ignore signo))
+  (setf *RUNNING* (not (techimera.rest:stop))))
+
+(defun contains-flag (flag argv)
+  (loop for arg in argv
+        thereis (string= arg flag)))
+
+(defun contains-bootstrapping (argv)
+  (or (contains-flag "--bootstrap" argv)
+      (contains-flag "-b" argv)))
+
+(defun contains-swank (argv)
+  (or (contains-flag "--swank" argv)
+      (contains-flag "-s" argv)))
+
+(defun run-bootstrapping ()
+  "This procedure starts the server then kills it."
+  (format t "~&Starting server for bootstrapping...~&")
+  (techimera.rest:start-server)
+  (format t "~&Disposing server...~&")
+  (techimera.rest:stop-server))
+
+(defun main (&rest argv)
+  (when (contains-swank argv)
+    (format t "~&Starting Swank server on port 9001...~&")
+    (swank-loader:init)
+    (swank:create-server :port 9001))
+  (cond ((contains-bootstrapping argv)
+         (run-bootstrapping)
+         (format t "~&Server bootstrapped.~&"))
+        (t
+         (format t "~&~A~&" (techimera.rest:start))
+         (format t "~&REST server is running. Use Ctrl+C to interrupt.~&")
+         (cffi:foreign-funcall "signal"
+                               :int +SIGINT+
+                               :pointer (cffi:callback interrupt-handler))
+         (loop while *running* do (sleep 1))
+         (format t "~&REST server stopped.~&")))
+  0)
