@@ -16,6 +16,8 @@ exec ros -Q -- $0 "$@"
 (defconstant +SIGINT+ 2)
 (defparameter *running* t)
 
+(setf swank::*loopback-interface* "0.0.0.0")
+
 (cffi:defcallback interrupt-handler :void ((signo :int))
   (declare (ignore signo))
   (setf *RUNNING* (not (techimera.rest:stop))))
@@ -43,7 +45,7 @@ exec ros -Q -- $0 "$@"
   (when (contains-swank argv)
     (format t "~&Starting Swank server on port 9001...~&")
     (swank-loader:init)
-    (swank:create-server :port 9001))
+    (swank:create-server :port 4005))
   (cond ((contains-bootstrapping argv)
          (run-bootstrapping)
          (format t "~&Server bootstrapped.~&"))

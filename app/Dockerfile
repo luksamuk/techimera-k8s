@@ -33,6 +33,8 @@ COPY --from=builder /usr/lib/libstdc++.so.6.0.29 /usr/lib/
 COPY --from=builder /usr/lib/libstdc++.so.6 /usr/lib/
 COPY --from=builder /usr/lib/libstdc++.so /usr/lib/
 
+# HTTP Server and Swank for remote REPL
 EXPOSE 9000
-EXPOSE 9001
+EXPOSE 4005
+
 ENTRYPOINT ["qlot", "exec", "ros", "--", "techimera.ros", "--swank"]

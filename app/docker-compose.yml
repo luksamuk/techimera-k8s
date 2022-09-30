@@ -24,7 +24,7 @@ services:
       - PGSQL_DATABASE=techimera
     ports:
       - "9000:9000"
-      - "9001:9001"
+      - "9001:4005"
     depends_on:
       - database
 
