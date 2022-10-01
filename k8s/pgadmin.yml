@@ -1,0 +1,101 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgadmin-configmap
+  namespace: techimera
+data:
+  servers.json: |
+    {
+        "Servers": {
+            "1": {
+                "Name": "PostgreSQL",
+                "Group": "Servers",
+                "Host": "postgresql",
+                "Port": 5432,
+                "MaintenanceDB": "postgres",
+                "Username": "postgres",
+                "SSLMode": "prefer",
+                "PassFile": "/pgpassfile"
+            }
+        }
+    }
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: pgadmin-secret
+  namespace: techimera
+data:
+  PGADMIN_DEFAULT_EMAIL: YWRtaW5AYWRtaW4uY29t
+  PGADMIN_DEFAULT_PASSWORD: YWRtaW4=
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pgadmin-pvc
+  namespace: techimera
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 300Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin
+  namespace: techimera
+spec:
+  template:
+    metadata:
+      name: pgadmin
+      labels:
+        app: pgadmin
+    spec:
+      containers:
+        - name: pgadmin-container
+          image: dpage/pgadmin4:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              name: pgadmin
+          envFrom:
+            - secretRef:
+                name: pgadmin-secret
+          env:
+            - name: SCRIPT_NAME
+              value: "/pgadmin"
+          volumeMounts:
+            - name: pgadmin-config
+              mountPath: /pgadmin4/servers.json
+              subPath: servers.json
+              readOnly: true
+            - name: pgadmin-data
+              mountPath: /var/lib/pgadmin
+      volumes:
+        - name: pgadmin-config
+          configMap:
+            name: pgadmin-configmap
+        - name: pgadmin-data
+          persistentVolumeClaim:
+            claimName: pgadmin-pvc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgadmin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgadmin
+  namespace: techimera
+spec:
+  type: ClusterIP
+  selector:
+    app: pgadmin
+  ports:
+    - name: "app"
+      port: 80
