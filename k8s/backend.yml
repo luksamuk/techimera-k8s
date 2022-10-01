@@ -47,11 +47,11 @@ spec:
                 name: backend-secret
           resources:
             requests:
-              cpu: 200m
-    replicas: 2
-    selector:
-      matchLabels:
-        app: backend
+              cpu: 500m
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
 ---
 apiVersion: v1
 kind: Service
@@ -63,9 +63,11 @@ spec:
   selector:
     app: backend
   ports:
-    - port: 9000
+    - name: "http"
+      port: 9000
       nodePort: 30000
-    - port: 4005
+    - name: "swank"
+      port: 4005
       nodePort: 31000
 ---
 apiVersion: autoscaling/v2
