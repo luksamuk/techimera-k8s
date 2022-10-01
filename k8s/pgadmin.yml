@@ -93,9 +93,10 @@ metadata:
   name: pgadmin
   namespace: techimera
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: pgadmin
   ports:
     - name: "app"
       port: 80
+      nodePort: 30002

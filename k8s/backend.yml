@@ -68,7 +68,7 @@ spec:
       nodePort: 30000
     - name: "swank"
       port: 4005
-      nodePort: 31000
+      nodePort: 30001
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
