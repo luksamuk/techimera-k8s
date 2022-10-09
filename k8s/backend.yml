@@ -17,7 +17,7 @@ metadata:
   namespace: techimera
 data:
   APP_HOST: 0.0.0.0
-  APP_PORT: "9000"
+  APP_PORT: "4000"
   PGSQL_HOST: postgresql
   PGSQL_PORT: "5432"
 ---
@@ -38,7 +38,7 @@ spec:
           image: luksamuk/techimera:0.2.0
           imagePullPolicy: Always
           ports:
-            - containerPort: 9000
+            - containerPort: 4000
             - containerPort: 4005
           envFrom:
             - configMapRef:
@@ -47,6 +47,8 @@ spec:
                 name: backend-secret
           resources:
             requests:
+              cpu: 500m
+            limits:
               cpu: 500m
   replicas: 2
   selector:
@@ -64,11 +66,11 @@ spec:
     app: backend
   ports:
     - name: "http"
-      port: 9000
-      nodePort: 30000
+      port: 4000
+      nodePort: 32000
     - name: "swank"
       port: 4005
-      nodePort: 30001
+      nodePort: 32001
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
